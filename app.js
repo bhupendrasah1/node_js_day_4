@@ -7,6 +7,7 @@ const app = express()
 // const storage = require("./middleware/multerConfig").storage
 
 const {multer,storage} = require('./middleware/multerConfig') 
+const { get } = require("mongoose")
 const upload = multer({storage : storage})
 
 connectToDb()
@@ -28,6 +29,24 @@ app.get("/about",(req,res)=>{
 app.get("/createblog",(req,res)=>{
     res.render("./blog/createBlog")
 })
+app.get("/createblog",(req,res)=>{
+    res.render("./blog/createBlog")
+})
+app.get("/deleteblog/:id",async (req,res)=>{
+    const id = req.params.id
+     await Blog.findByIdAndDelete(id)
+    res.redirect("/")
+})
+app.get("/Editblog/:id",async(req,res)=>{
+const id = req.params.id
+ const blog=await Blog.findById(id)
+ res.render("edit.ejs")
+})
+app.get("/blog/:id", async(req,res)=>{
+    const id = req.params.id
+    const blog = await Blog.findById(id)
+    res.render("./blog/blogs.ejs", {blog})
+})
 
 app.post("/createblog",upload.single('image') ,async (req,res)=>{
     // const title = req.body.title 
@@ -35,7 +54,7 @@ app.post("/createblog",upload.single('image') ,async (req,res)=>{
     // const description  = req.body.description 
     const fileName = req.file.filename
     const {title,subtitle,description} = req.body 
-    console.log(title,subtitle,description)
+    // console.log(title,subtitle,description)
 
    await Blog.create({
         title, 
@@ -43,11 +62,16 @@ app.post("/createblog",upload.single('image') ,async (req,res)=>{
         description, 
         image : fileName
     })
-
     res.send("Blog created successfully")
+})
+app.get("./blog/:id", async(req,res)=>{
+    const id=req.params.id
+    const blog=await Blog.findById(id)
+    res.render("./blog/singleBlog")
 })
 
 app.use(express.static("./storage"))
+
 
 app.listen(3000,()=>{
     console.log("Nodejs project has started at port" + 3000)
